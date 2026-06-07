@@ -1,0 +1,21 @@
+import fs from 'fs';
+
+function run() {
+  const content = fs.readFileSync('fetched_source.js', 'utf8');
+  
+  const idx = content.indexOf("Leave a Signature");
+  if (idx !== -1) {
+    console.log("Found context surrounding 'Leave a Signature':");
+    console.log(content.slice(idx - 150, idx + 100));
+  } else {
+    console.log("Could not find 'Leave a Signature' in bundle");
+  }
+
+  const idx2 = content.indexOf("Steering Ledger Board");
+  if (idx2 !== -1) {
+    console.log("Found context surrounding 'Steering Ledger Board':");
+    console.log(content.slice(idx2 - 150, idx2 + 100));
+  }
+}
+
+run();

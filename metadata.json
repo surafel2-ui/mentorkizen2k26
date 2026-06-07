@@ -1,0 +1,27 @@
+import fs from 'fs';
+
+function run() {
+  const content = fs.readFileSync('fetched_source.js', 'utf8');
+
+  // We are looking for something like: PT = Ut("..." or dc = Ut("..." or pf = Ut("..."
+  const searchTerms = ['PT', 'dc', 'pf'];
+  
+  for (const term of searchTerms) {
+    const pattern1 = `${term}=Ut("`;
+    const pattern2 = `${term}=Ut(`;
+    const pattern3 = `${term} = Ut("`;
+    const pattern4 = `${term} = Ut(`;
+    
+    const patterns = [pattern1, pattern2, pattern3, pattern4];
+    console.log(`\n=== Matches for ${term} ===`);
+    for (const pat of patterns) {
+      let idx = 0;
+      while ((idx = content.indexOf(pat, idx)) !== -1) {
+        console.log(content.slice(idx, idx + 150));
+        idx += pat.length;
+      }
+    }
+  }
+}
+
+run();

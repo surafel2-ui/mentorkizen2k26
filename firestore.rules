@@ -1,0 +1,70 @@
+import fs from 'fs';
+import path from 'path';
+
+async function run() {
+  try {
+    const url = 'https://api.github.com/repos/surafel2-ui/kizenmentor2k26/git/trees/main?recursive=1';
+    console.log('Fetching tree from GitHub API...', url);
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+    
+    if (!res.ok) {
+      console.log('GitHub API returned status:', res.status);
+      // Let's try master branch instead
+      const urlMaster = 'https://api.github.com/repos/surafel2-ui/kizenmentor2k26/git/trees/master?recursive=1';
+      const mres = await fetch(urlMaster, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0'
+        }
+      });
+      if (!mres.ok) {
+        console.log('Master branch also failed with status:', mres.status);
+        return;
+      }
+      const data = await mres.json();
+      downloadTree(data.tree, 'master');
+      return;
+    }
+
+    const data = await res.json();
+    await downloadTree(data.tree, 'main');
+  } catch (err) {
+    console.error('Error fetching tree:', err);
+  }
+}
+
+async function downloadTree(tree: any[], branch: string) {
+  console.log(`Found ${tree.length} items in the GitHub tree.`);
+  
+  for (const item of tree) {
+    if (item.type === 'blob') {
+      const filePath = item.path;
+      // Skip some build-related files if they would cause trouble (but we want basically everything custom)
+      if (filePath.startsWith('node_modules') || filePath.startsWith('dist') || filePath.startsWith('.git') || filePath.includes('fetch-github') || filePath.includes('temp-fetch')) {
+        continue;
+      }
+      
+      console.log(`Fetching ${filePath}...`);
+      const rawUrl = `https://raw.githubusercontent.com/surafel2-ui/kizenmentor2k26/${branch}/${filePath}`;
+      try {
+        const res = await fetch(rawUrl);
+        if (res.ok) {
+          const content = await res.text();
+          const localPath = path.join(process.cwd(), filePath);
+          fs.mkdirSync(path.dirname(localPath), { recursive: true });
+          fs.writeFileSync(localPath, content);
+          console.log(`Saved ${filePath} (${content.length} bytes)`);
+        } else {
+          console.log(`Failed to fetch raw for ${filePath}`);
+        }
+      } catch (err) {
+        console.log(`Error fetching raw content for ${filePath}:`, err);
+      }
+    }
+  }
+}
+
+run();

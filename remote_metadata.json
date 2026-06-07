@@ -1,0 +1,35 @@
+import fs from 'fs';
+
+function run() {
+  const content = fs.readFileSync('fetched_source.js', 'utf8');
+
+  // Let's search for "lucide-react" or see how imports are made.
+  // In a Vite bundle, they might be compiled as e.g. "Heart" or "lucide" references.
+  // Let's search for "createReactComponent" or similar.
+  const iconsToFind = ['Hy', 'Uc', 'jo', 'Yy', 'qy', 'pf', 'HT', 'Fp', 'zT', 'JT', '$p', '$T', 'Pp', 'Wp', 'e4', 'Jp', 'Kp', 'df', 'Tt', 'xo', 'yo', 'xo', 'Zp', 'q', 'm'];
+  console.log('Searching definitions of icons/helpers...');
+
+  // Let's search inside the whole file for definitions of these variables.
+  // e.g. "const Hy =" or similar.
+  for (const name of iconsToFind) {
+    const idxs = [];
+    let i = -1;
+    while ((i = content.indexOf(`const ${name} =`, i + 1)) !== -1) {
+      idxs.push(i);
+    }
+    while ((i = content.indexOf(`var ${name} =`, i + 1)) !== -1) {
+      idxs.push(i);
+    }
+    while ((i = content.indexOf(`function ${name}`, i + 1)) !== -1) {
+      idxs.push(i);
+    }
+    if (idxs.length > 0) {
+      console.log(`\nVariable "${name}" definitions found at offset(s): ${idxs}`);
+      for (const idx of idxs) {
+        console.log(content.slice(idx, idx + 250));
+      }
+    }
+  }
+}
+
+run();

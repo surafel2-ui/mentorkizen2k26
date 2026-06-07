@@ -1,0 +1,18 @@
+import fs from 'fs';
+
+function run() {
+  const content = fs.readFileSync('fetched_source.js', 'utf8');
+  console.log('Total characters:', content.length);
+
+  // Let's write the last 30,000 characters to a file. This is where Vite places the application entry points.
+  const appSegment = content.slice(-50000);
+  fs.writeFileSync('app_segment.js', appSegment);
+  console.log('Saved last 50,000 chars to app_segment.js');
+
+  // Let's also search for lines containing specific interesting terms in the whole file
+  // Like "Mentor Academy", "Senior Binder", "Projects", etc., and output them around the matches.
+  const lines = content.split('\n');
+  console.log(`Total lines: ${lines.length}`);
+}
+
+run();
